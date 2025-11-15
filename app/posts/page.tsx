@@ -1,27 +1,101 @@
-import prisma from "@/lib/prisma";
+'use client'
 
-export default async function Posts() {
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
+import Link from 'next/link'
 
-    const posts = await prisma.post.findMany({
-        include: {
-            author: true,
-        }
-    })
+const List = () => {
+  const [posts, setPosts] = useState([])
+
+  useEffect(() => {
+    fetchPosts()
+  }, [])
+
+  const fetchPosts = async () => {
+    try {
+      const res = await axios.get('/api/posts')
+      setPosts(res.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const deletePost = async (id: Number) => {
+    try {
+      await axios.delete(`/api/posts/${id}`)
+      fetchPosts()
+    } catch (error) {
+      console.error('Failed to delete the post', error)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center -mt-16">
-      <h1 className="text-4xl font-bold mb-8 font-[family-name:var(--font-geist-sans)] text-[#333333]">
-        Posts
-      </h1>
-      <ul className="font-[family-name:var(--font-geist-sans)] max-w-2xl space-y-4">
-        {posts.map((post) => (
-          <li key={post.id}>
-            <span className="font-semibold">{post.title}</span>
-            <span className="text-sm text-gray-600 ml-2">
-              by {post.author.name}
-            </span>
-          </li>
-        ))}
-      </ul>
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-semibold mb-6">Blog Posts</h1>
+      <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Title
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Author
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {posts.map((post: any) => (
+              <tr key={post.id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {post.title}
+                  </div>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <div className="text-sm text-gray-900">
+                    {post.authorId}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <Link
+                    className="text-indigo-600 hover:text-indigo-900 mr-4"
+                    href={`/posts/edit/${post.id}`}
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => deletePost(post.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Link
+        className="mt-4 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        href="/posts/create"
+      >
+        Create a New Post
+      </Link>
     </div>
-  );
+  )
 }
+
+export default List
