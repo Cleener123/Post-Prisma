@@ -8,15 +8,17 @@ const Edit = ({ params }: { params: Promise<{ id: string }> }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [id, setId] = useState<String | null>(null); // local state to store id
+  const [category, setCategory] = useState("");
   const router = useRouter();
 
   const fetchPost = async (id: String) => {
     try {
-      const res = await axios.get(`/api/posts/${id}`);
-      setTitle(res.data.title);
-      setContent(res.data.content);
+      const res = await axios.get(`/api/posts/${id}`)
+      setTitle(res.data.title)
+      setContent(res.data.content)
+      setCategory(res.data.category || "")
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
   };
 
@@ -28,7 +30,6 @@ const Edit = ({ params }: { params: Promise<{ id: string }> }) => {
     };
 
     getParams(); // Call to unwrap params
-
   }, [params]);
 
   useEffect(() => {
@@ -45,6 +46,7 @@ const Edit = ({ params }: { params: Promise<{ id: string }> }) => {
         await axios.put(`/api/posts/${id}`, {
           title,
           content,
+          category,
         });
         router.push("/");
       }
@@ -90,6 +92,18 @@ const Edit = ({ params }: { params: Promise<{ id: string }> }) => {
             onChange={(e) => setContent(e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           ></textarea>
+        </div>
+        <div>
+          <label>Category</label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">Select a category</option>
+            {/* Example static categories, replace or populate dynamically */}
+            <option value="Tech">Tech</option>
+            <option value="Lifestyle">Lifestyle</option>
+          </select>
         </div>
         <div>
           <button
