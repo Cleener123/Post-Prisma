@@ -7,11 +7,22 @@ import Link from 'next/link'
 const List = () => {
   const [posts, setPosts] = useState([])
   const [search, setSearch] = useState('')
+  const [categories, setCategories] = useState([])
   const [category, setCategory] = useState('')
   const [sort, setSort] = useState('desc')
 
+  const fetchCategories = async () => {
+    try{
+      const response = await axios.get('/api/categories')
+      setCategories(response.data)
+    } catch(error) {
+      console.error('Failed to fetch categories', error)
+    }
+  }
+
   useEffect(() => {
     fetchPosts()
+    fetchCategories()
   }, [])
 
    const handleApplyFilters = () => {
@@ -55,8 +66,9 @@ const List = () => {
             className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">Select Category</option>
-            <option value="Tech">Tech</option>
-            <option value="Lifestyle">Lifestyle</option>
+            {categories.map((category: any) => (
+              <option key={category.id} value={category.id}>{category.name}</option>
+            ))}
           </select>
           <select
             value={sort}
@@ -108,7 +120,7 @@ const List = () => {
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <div className="text-sm text-gray-900">
-                    {post.authorId}
+                    {post.author.name}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

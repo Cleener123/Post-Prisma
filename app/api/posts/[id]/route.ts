@@ -19,10 +19,10 @@ export async function PUT(
 ) {
   try {
     const {id} = await params;
-    const { title, content, authorId, category } = await req.json()
+    const { title, content, authorId, categoryId } = await req.json()
     return Response.json(await prisma.post.update({
       where: { id: parseInt(id) },
-      data: { title, content, authorId, category }, // Assuming author with ID 1 exists
+      data: { title, content, authorId, categoryId }, // Assuming author with ID 1 exists
     }))
   } catch (error) {
     return new Response(error as BodyInit, {

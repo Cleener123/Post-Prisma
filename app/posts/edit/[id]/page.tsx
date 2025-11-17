@@ -5,10 +5,11 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 
 const Edit = ({ params }: { params: Promise<{ id: string }> }) => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
   const [id, setId] = useState<String | null>(null); // local state to store id
-  const [category, setCategory] = useState("");
+  const [categoryId, setCategoryId] = useState('')
+  const [category, setCategory] = useState([])
   const router = useRouter();
 
   const fetchPost = async (id: String) => {
@@ -16,11 +17,20 @@ const Edit = ({ params }: { params: Promise<{ id: string }> }) => {
       const res = await axios.get(`/api/posts/${id}`)
       setTitle(res.data.title)
       setContent(res.data.content)
-      setCategory(res.data.category || "")
+      setCategoryId(res.data.categoryId || "")
     } catch (error) {
       console.error(error)
     }
-  };
+  }
+
+  const fetchCategory = async () => {
+    try {
+      const response = await axios.get('/api/categories')
+      setCategory(response.data)
+    } catch (error) {
+      console.error('Failed to fetch categories', error)
+    }
+  }
 
   useEffect(() => {
     // Unwrap the params to get the id value
@@ -35,6 +45,7 @@ const Edit = ({ params }: { params: Promise<{ id: string }> }) => {
   useEffect(() => {
     if (id) {
       fetchPost(id);
+      fetchCategory()
     }
   }, [id]);
 
@@ -43,10 +54,11 @@ const Edit = ({ params }: { params: Promise<{ id: string }> }) => {
 
     try {
       if (id) {
+        const numCategoryId = parseInt(categoryId)
         await axios.put(`/api/posts/${id}`, {
           title,
           content,
-          category,
+          categoryId: numCategoryId,
         });
         router.push("/");
       }
@@ -96,13 +108,14 @@ const Edit = ({ params }: { params: Promise<{ id: string }> }) => {
         <div>
           <label>Category</label>
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            id="category"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
           >
             <option value="">Select a category</option>
-            {/* Example static categories, replace or populate dynamically */}
-            <option value="Tech">Tech</option>
-            <option value="Lifestyle">Lifestyle</option>
+            {category.map((category: any) => (
+              <option key={category.id} value={category.id}>{category.name}</option>
+            ))}
           </select>
         </div>
         <div>

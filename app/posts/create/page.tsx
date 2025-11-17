@@ -1,20 +1,36 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 
 const Create = () => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [category, setCategory] = useState('')
+  const [categoryId, setCategoryId] = useState('')
+  const [category, setCategory] = useState([])
   const router = useRouter()
+
+  const fetchCategory = async () => {
+    try {
+      const response = await axios.get('/api/categories')
+      setCategory(response.data)
+    } catch(error) {
+      console.error('Failed to fetch categories', error)
+    }
+  }
+
+  useEffect(() => {
+    // Fetch category when component mount
+    fetchCategory()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     try {
-      await axios.post('/api/posts', { title, content, category })
+      const numCategoryId = parseInt(categoryId)
+      await axios.post('/api/posts', { title, content, categoryId: numCategoryId })
       router.push('/')
     } catch (error) {
       console.error(error)
@@ -62,13 +78,14 @@ const Create = () => {
         <div>
           <label>Category</label>
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            id='category'
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
           >
             <option value="">Select a category</option>
-            {/* Example static categories, replace or populate dynamically */}
-            <option value="Tech">Tech</option>
-            <option value="Lifestyle">Lifestyle</option>
+            {category.map((category: any) => (
+              <option key={category.id} value={category.id}>{category.name}</option>
+            ))}
           </select>
         </div>
         <div>

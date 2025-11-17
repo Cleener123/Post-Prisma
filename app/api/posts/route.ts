@@ -15,15 +15,18 @@ export async function GET(req: NextRequest) {
   }
   
   if (category) {
-    whereCondition.category = category
+    whereCondition.categoryId = parseInt(category)
   }
 
   try {
     const posts = await prisma.post.findMany({
       where: whereCondition,
       orderBy: {
-        createdAt: sort === 'desc' ? 'desc' : 'asc',
+        createdAt: sort === "desc" ? "desc" : "asc",
       },
+      include: {
+        author: true,
+      }
     })
     
     return Response.json(posts)
@@ -38,13 +41,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: Request) {
   try {
-    const { title, content, category } = await req.json();
+    const { title, content, categoryId } = await req.json();
     const newPost = await prisma.post.create({
       data: {
         title,
         content,
         authorId: 1,
-        category: category || 'Uncategorized',
+        categoryId,
       },
     });
     return Response.json(newPost);
